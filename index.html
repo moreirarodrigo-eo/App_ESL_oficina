@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Games</title>
+    <style>
+        /* --- Estilos Gerais --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .game-section {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        .active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Jogo 1: Memory Game --- */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: #e74c3c;
+            color: #e74c3c;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.3s, background-color 0.3s, color 0.3s;
+        }
+        .card.flipped {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: 2px solid #bdc3c7;
+            transform: scale(1.05);
+        }
+        .card.matched {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            pointer-events: none;
+            transform: scale(1);
+        }
+
+        /* --- Jogo 2: Sentence Scramble --- */
+        .box {
+            min-height: 60px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+        .word-chip {
+            background-color: #f1c40f;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* --- Jogo 3: Word Unscramble --- */
+        .scrambled-word {
+            font-size: 40px;
+            letter-spacing: 8px;
+            color: #8e44ad;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .hint {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        input[type="text"] {
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        /* Feedback global */
+        .feedback {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 30px;
+        }
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎮 English Learning Zone</h1>
+        
+        <div class="menu">
+            <button onclick="showGame('game1')">1. Memory Game</button>
+            <button onclick="showGame('game2')">2. Build a Sentence</button>
+            <button onclick="showGame('game3')">3. Word Unscramble</button>
+        </div>
+
+        <div id="game1" class="game-section active">
+            <h2>Vocabulary Memory Match</h2>
+            <p>Combine a palavra em inglês com sua tradução correta.</p>
+            <div class="memory-grid" id="memoryGrid"></div>
+            <p class="feedback" id="memoryFeedback"></p>
+            <button onclick="initMemoryGame()" style="background-color: #95a5a6;">Restart Game</button>
+        </div>
+
+        <div id="game2" class="game-section">
+            <h2>Build a Sentence</h2>
+            <p>Clique nas palavras na ordem correta para formar uma frase em inglês.</p>
+            
+            <h3>Sua Frase:</h3>
+            <div class="box" id="sentenceAnswer"></div>
+            
+            <h3>Palavras Embaralhadas:</h3>
+            <div class="box" id="sentenceBank"></div>
+            
+            <button onclick="checkSentence()">Check Answer</button>
+            <button onclick="initSentenceGame()" style="background-color: #95a5a6;">Reset</button>
+            <p class="feedback" id="sentenceFeedback"></p>
+        </div>
+
+        <div id="game3" class="game-section">
+            <h2>Word Unscramble</h2>
+            <p>Desembaralhe as letras para descobrir a palavra em inglês.</p>
+            
+            <div class="hint" id="scrambleHint">Hint: ...</div>
+            <div class="scrambled-word" id="scrambledWord"></div>
+            
+            <input type="text" id="scrambleInput" placeholder="TYPE HERE..." autocomplete="off">
+            <br>
+            <button onclick="checkScramble()">Check Answer</button>
+            <button onclick="initScrambleGame()" style="background-color: #95a5a6;">Next Word</button>
+            <p class="feedback" id="scrambleFeedback"></p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Navegação entre jogos ---
+        function showGame(gameId) {
+            document.querySelectorAll('.game-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(gameId).classList.add('active');
+        }
+
+        // --- LÓGICA DO JOGO 1: MEMORY GAME ---
+        const vocabPairs = [
+            { en: "Apple", pt: "Maçã" }, { en: "Book", pt: "Livro" },
+            { en: "Dog", pt: "Cachorro" }, { en: "Water", pt: "Água" },
+            { en: "House", pt: "Casa" }, { en: "Car", pt: "Carro" }
+        ];
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function initMemoryGame() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            document.getElementById('memoryFeedback').textContent = '';
+            matchedPairs = 0;
+            flippedCards = [];
+            
+            // Criar array plano e embaralhar
+            memoryCards = [];
+            vocabPairs.forEach(pair => {
+                memoryCards.push({ text: pair.en, id: pair.en, type: 'en' });
+                memoryCards.push({ text: pair.pt, id: pair.en, type: 'pt' });
+            });
+            memoryCards.sort(() => Math.random() - 0.5);
+
+            memoryCards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card');
+                cardEl.dataset.id = card.id;
+                cardEl.dataset.index = index;
+                cardEl.textContent = card.text;
+                cardEl.onclick = () => flipCard(cardEl, card);
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function flipCard(cardEl, card) {
+            if (flippedCards.length < 2 && !cardEl.classList.contains('flipped') && !cardEl.classList.contains('matched')) {
+                cardEl.classList.add('flipped');
+                flippedCards.push({ el: cardEl, data: card });
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 800);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.data.id === card2.data.id && card1.data.type !== card2.data.type) {
+                card1.el.classList.add('matched');
+                card2.el.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === vocabPairs.length) {
+                    document.getElementById('memoryFeedback').textContent = "Excellent! You matched all words! 🎉";
+                    document.getElementById('memoryFeedback').className = "feedback success";
+                }
+            } else {
+                card1.el.classList.remove('flipped');
+                card2.el.classList.remove('flipped');
+            }
+            flippedCards = [];
+        }
+
+        // --- LÓGICA DO JOGO 2: SENTENCE SCRAMBLE ---
+        const sentences = [
+            "I am learning English today",
+            "The quick brown fox jumps",
+            "She likes to read books",
+            "My favorite color is blue"
+        ];
+        let currentSentence = [];
+        
+        function initSentenceGame() {
+            const bank = document.getElementById('sentenceBank');
+            const answer = document.getElementById('sentenceAnswer');
+            bank.innerHTML = '';
+            answer.innerHTML = '';
+            document.getElementById('sentenceFeedback').textContent = '';
+            
+            const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+            currentSentence = randomSentence.split(' ');
+            let scrambled = [...currentSentence].sort(() => Math.random() - 0.5);
+
+            scrambled.forEach(word => {
+                const wordEl = document.createElement('div');
+                wordEl.classList.add('word-chip');
+                wordEl.textContent = word;
+                wordEl.onclick = () => moveWord(wordEl);
+                bank.appendChild(wordEl);
+            });
+        }
+
+        function moveWord(wordEl) {
+            const bank = document.getElementById('sentenceBank');
+            const answer = document.getElementById('sentenceAnswer');
+            
+            if (wordEl.parentElement === bank) {
+                answer.appendChild(wordEl);
+            } else {
+                bank.appendChild(wordEl);
+            }
+        }
+
+        function checkSentence() {
+            const answerBox = document.getElementById('sentenceAnswer');
+            const userWords = Array.from(answerBox.children).map(el => el.textContent);
+            const feedback = document.getElementById('sentenceFeedback');
+
+            if (userWords.join(' ') === currentSentence.join(' ')) {
+                feedback.textContent = "Perfect syntax! Well done! 🌟";
+                feedback.className = "feedback success";
+            } else {
+                feedback.textContent = "Not quite right. Try again!";
+                feedback.className = "feedback error";
+            }
+        }
+
+        // --- LÓGICA DO JOGO 3: WORD UNSCRAMBLE ---
+        const scrambleWords = [
+            { word: "TEACHER", hint: "A person who teaches in a school" },
+            { word: "STUDENT", hint: "A person who is studying at a school or college" },
+            { word: "BREAKFAST", hint: "The first meal of the day" },
+            { word: "COMPUTER", hint: "An electronic machine for processing data" },
+            { word: "YELLOW", hint: "The color of the sun or a banana" }
+        ];
+        let currentWordData = null;
+
+        function initScrambleGame() {
+            currentWordData = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
+            const scrambled = currentWordData.word.split('').sort(() => Math.random() - 0.5).join('');
+            
+            document.getElementById('scrambledWord').textContent = scrambled;
+            document.getElementById('scrambleHint').textContent = "Hint: " + currentWordData.hint;
+            document.getElementById('scrambleInput').value = '';
+            document.getElementById('scrambleFeedback').textContent = '';
+        }
+
+        function checkScramble() {
+            const input = document.getElementById('scrambleInput').value.toUpperCase();
+            const feedback = document.getElementById('scrambleFeedback');
+
+            if (input === currentWordData.word) {
+                feedback.textContent = "Correct! Great spelling! 🏆";
+                feedback.className = "feedback success";
+            } else {
+                feedback.textContent = "Incorrect. Check your spelling!";
+                feedback.className = "feedback error";
+            }
+        }
+
+        // Inicializar todos os jogos ao carregar a página
+        window.onload = () => {
+            initMemoryGame();
+            initSentenceGame();
+            initScrambleGame();
+        };
+    </script>
+</body>
+</html>
