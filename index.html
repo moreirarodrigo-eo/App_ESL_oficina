@@ -95,11 +95,22 @@
         }
 
         /* --- Jogo 1: Memory Game --- */
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            background-color: #f1c40f;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
         .memory-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .card {
             background-color: #e74c3c;
@@ -114,6 +125,8 @@
             cursor: pointer;
             user-select: none;
             transition: transform 0.3s, background-color 0.3s, color 0.3s;
+            text-align: center;
+            padding: 5px;
         }
         .card.flipped {
             background-color: #ecf0f1;
@@ -202,9 +215,12 @@
             <button onclick="showGame('game3')">3. Word Unscramble</button>
         </div>
 
+        <!-- Jogo 1: Jogo da Memória de Vocabulário -->
         <div id="game1" class="game-section active">
             <h2>Vocabulary Memory Match</h2>
             
+            <div class="score-display">Score: <span id="memoryScoreDisplay">0</span></div>
+
             <div class="custom-controls">
                 <strong>Adicione suas palavras:</strong>
                 <span class="instruction">Formato: Palavra em Inglês, Tradução (uma por linha)</span>
@@ -223,6 +239,7 @@ House, Casa</textarea>
             <p class="feedback" id="memoryFeedback"></p>
         </div>
 
+        <!-- Jogo 2: Ordenação de Frases (Sintaxe) -->
         <div id="game2" class="game-section">
             <h2>Build a Sentence</h2>
             
@@ -249,6 +266,7 @@ My favorite color is blue</textarea>
             <p class="feedback" id="sentenceFeedback"></p>
         </div>
 
+        <!-- Jogo 3: Desembaralhe a Palavra (Ortografia) -->
         <div id="game3" class="game-section">
             <h2>Word Unscramble</h2>
             
@@ -292,14 +310,23 @@ COMPUTER, Electronic machine for processing data</textarea>
         let currentVocabPairs = [];
         let flippedCards = [];
         let matchedPairs = 0;
+        let memoryScore = 0; // Variável global para a pontuação
+
+        function updateScoreDisplay() {
+            document.getElementById('memoryScoreDisplay').textContent = memoryScore;
+        }
 
         function initMemoryGame(isCustom = false) {
             const grid = document.getElementById('memoryGrid');
             grid.innerHTML = '';
             document.getElementById('memoryFeedback').textContent = '';
+            
+            // Resetar variáveis do jogo
             matchedPairs = 0;
             flippedCards = [];
             currentVocabPairs = [];
+            memoryScore = 0;
+            updateScoreDisplay();
             
             if (isCustom) {
                 const inputText = document.getElementById('customVocabInput').value;
@@ -320,7 +347,6 @@ COMPUTER, Electronic machine for processing data</textarea>
 
             let memoryCards = [];
             currentVocabPairs.forEach((pair, index) => {
-                // Usamos o index para garantir IDs únicos caso haja palavras repetidas
                 memoryCards.push({ text: pair.en, id: index, type: 'en' });
                 memoryCards.push({ text: pair.pt, id: index, type: 'pt' });
             });
@@ -350,18 +376,26 @@ COMPUTER, Electronic machine for processing data</textarea>
 
         function checkMatch() {
             const [card1, card2] = flippedCards;
+            
             if (card1.data.id === card2.data.id && card1.data.type !== card2.data.type) {
+                // ACERTOU
                 card1.el.classList.add('matched');
                 card2.el.classList.add('matched');
                 matchedPairs++;
+                memoryScore += 20; // +20 pontos
+                
                 if (matchedPairs === currentVocabPairs.length) {
-                    document.getElementById('memoryFeedback').textContent = "Excellent! You matched all words! 🎉";
+                    document.getElementById('memoryFeedback').textContent = `Excellent! You matched all words! 🎉 Final Score: ${memoryScore}`;
                     document.getElementById('memoryFeedback').className = "feedback success";
                 }
             } else {
+                // ERROU
                 card1.el.classList.remove('flipped');
                 card2.el.classList.remove('flipped');
+                memoryScore = Math.max(0, memoryScore - 5); // -5 pontos (mas não fica negativo)
             }
+            
+            updateScoreDisplay();
             flippedCards = [];
         }
 
